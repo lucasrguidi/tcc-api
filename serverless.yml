@@ -1,0 +1,69 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: lucasrguidi
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: tcc-api
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: tcc-api
+
+stages:
+  default:
+    params:
+      tableName: users-table-dev
+      nodeEnv: lambda
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  # Uncomment to easily set up a custom domain. Read the docs for more details:
+  # https://www.serverless.com/framework/docs/providers/aws/guide/domains
+  # domain: api.example.com
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [UsersTable, Arn]
+  environment:
+    TABLE_NAME: ${param:tableName}
+    NODE_ENV: ${param:nodeEnv}
+
+functions:
+  api:
+    handler: src/handler.handler
+    events:
+      - httpApi:
+          path: /users
+          method: get
+      - httpApi:
+          path: /users/{userId}
+          method: get
+      - httpApi:
+          path: /users
+          method: post
+      - httpApi:
+          path: /users/{userId}
+          method: put
+      - httpApi:
+          path: /users/{userId}
+          method: delete
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${param:tableName}
