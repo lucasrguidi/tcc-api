@@ -3,20 +3,20 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# PM2 para gerenciar o processo Node no container
+# PM2 global
 RUN npm i -g pm2
 
-# Copia manifestos e instala deps (inclui dev para compilar)
+# 1) Copia manifestos e instala TODAS deps (inclui dev) para conseguir compilar
 COPY package*.json ./
 RUN npm ci
 
-# Copia o restante do código
+# 2) Copia o código fonte
 COPY . .
 
-# Compila TypeScript para dist/
+# 3) Compila TypeScript para dist/
 RUN npm run build
 
-# Remove devDependencies para imagem de runtime mais enxuta (opcional)
+# 4) Remove devDependencies para imagem final mais enxuta
 RUN npm prune --omit=dev
 
 ENV NODE_ENV=production
@@ -25,5 +25,4 @@ ENV IN_CONTAINER=1
 
 EXPOSE 3000
 
-# Inicia a API via PM2 usando dist/app.js
 CMD ["pm2-runtime", "start", "deployments/ec2/ecosystem.config.cjs"]
