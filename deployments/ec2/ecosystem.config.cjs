@@ -3,8 +3,8 @@ module.exports = {
     {
       name: "tcc-api",
       script: "dist/app.mjs",
-      instances: "1",
-      exec_mode: "fork",
+      instances: "max",
+      exec_mode: "cluster",
       watch: false,
       env: {
         NODE_ENV: "production",
