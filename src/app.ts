@@ -66,6 +66,10 @@ app.delete("/users/:userId", async (req, res) => {
   }
 });
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 app.use((_req, res) => {
   res.status(404).json({ ok: false, error: "Not Found" });
 });
